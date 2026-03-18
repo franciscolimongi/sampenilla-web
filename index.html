@@ -826,12 +826,12 @@
   }
   
   
+  
   async function handleSubmit(e) {
     e.preventDefault();
     const form = e.target;
     const btn = document.getElementById('submitBtn');
 
-    // Recopilar campos
     const allInputs = [...form.querySelectorAll('input, select, textarea')];
     const firstName = allInputs[0]?.value || '';
     const lastName  = allInputs[1]?.value || '';
@@ -842,56 +842,57 @@
     const pkg       = pkgEl?.options?.[pkgEl.selectedIndex]?.text || pkgEl?.value || '';
     const message   = allInputs[6]?.value || '';
 
-    // Loading state
     btn.textContent = lang === 'en' ? 'Sending...' : 'Enviando...';
     btn.disabled = true;
     btn.style.opacity = '0.7';
 
     try {
-      const res = await fetch('https://formspree.io/f/YOUR_FORM_ID', {
+      const res = await fetch('https://api.web3forms.com/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
         body: JSON.stringify({
+          access_key: 'd27f0898-3074-4108-b672-0b3bd7952b54',
+          subject: `Nueva consulta desde sampenilla.com — ${firstName} ${lastName}`,
           name:    `${firstName} ${lastName}`,
           email:   email,
           city:    city,
           phone:   phone,
           package: pkg,
-          message: message,
-          _subject: `Nueva consulta desde sampenilla.com — ${firstName} ${lastName}`
+          message: message
         })
       });
 
-      if (res.ok) {
-        btn.textContent = lang === 'en' ? '✓ Message sent! Sam will reply within 24h.' : '✓ ¡Mensaje enviado! Sam responderá en 24h.';
+      const data = await res.json();
+
+      if (data.success) {
+        btn.textContent = lang === 'en' ? '✓ Sent! Sam will reply within 24h.' : '✓ ¡Enviado! Sam responderá en 24h.';
         btn.style.background = '#545749';
         btn.style.borderColor = '#545749';
         btn.style.color = '#e8e2d9';
         btn.style.opacity = '1';
         form.reset();
         setTimeout(() => {
-          btn.textContent = lang === 'en' ? 'Send via WhatsApp →' : 'Enviar por WhatsApp →';
+          btn.textContent = lang === 'en' ? 'Send my inquiry →' : 'Enviar consulta →';
           btn.style = '';
           btn.disabled = false;
         }, 5000);
       } else {
-        throw new Error('Form error');
+        throw new Error('Error');
       }
     } catch(err) {
-      // Fallback: open WhatsApp if Formspree fails
-      btn.textContent = lang === 'en' ? 'Send via WhatsApp →' : 'Enviar por WhatsApp →';
-      btn.style = '';
+      btn.textContent = lang === 'en' ? 'Error — try WhatsApp' : 'Error — intenta WhatsApp';
+      btn.style.background = '#c0392b';
+      btn.style.borderColor = '#c0392b';
+      btn.style.color = '#fff';
+      btn.style.opacity = '1';
       btn.disabled = false;
-      const waMsg = `👋 *Hola Sam, te escribo desde tu sitio web*
-
-*Nombre:* ${firstName} ${lastName}
-*Email:* ${email}
-*Ciudad:* ${city}
-*Paquete:* ${pkg}
-*Mensaje:* ${message}`;
-      window.open(`https://wa.me/593999999999?text=${encodeURIComponent(waMsg)}`, '_blank');
+      setTimeout(() => {
+        btn.textContent = lang === 'en' ? 'Send my inquiry →' : 'Enviar consulta →';
+        btn.style = '';
+      }, 4000);
     }
   }
+
 
 
 
